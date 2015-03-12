@@ -9,7 +9,6 @@
   "author": "CG",
   "license": "MIT",
   "dependencies": {
-    "aws-sdk": "^2.1.16",
     "debug": "^2.1.2",
     "express": "^4.12.2",
     "superagent": "^0.21.0"
