@@ -1,2 +1,2 @@
-cache/*
-!cache
+examples/cache/*
+!examples/cache
