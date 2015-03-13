@@ -1,10 +1,10 @@
 {
   "name": "express-tile-cache",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Express middleware tile cache for tms services",
   "main": "lib",
   "directories": {
-    "example": "example"
+    "example": "examples"
   },
   "dependencies": {
     "debug": "^2.1.2",
@@ -14,6 +14,25 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "CG",
-  "license": "MIT"
+  "keywords": [
+    "express",
+    "geoserver",
+    "tms",
+    "tile",
+    "cache"
+  ],
+  "author": {
+    "name": "cg",
+    "email": "cgastrell@gmail.com",
+    "url": "https://github.com/CGastrell"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CGastrell/express-tile-cache.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CGastrell/express-tile-cache/issues"
+  },
+  "homepage": "https://github.com/CGastrell/express-tile-cache"
 }
