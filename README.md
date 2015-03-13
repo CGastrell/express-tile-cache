@@ -6,7 +6,7 @@ layout: default
  
 Express-tile-cache is a tile cacher for [TMS](http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification) map tiles services.
 
-By default it will cache tiles to filesystem and mantain a memory cache of requests, but both internal MemoryCache and Storage can be easily extended. There are currently 2 extensions, [s3-tile-storage](https://github.com/CGastrell/s3-tile-storage) and [redis-tile-cache].
+By default it will cache tiles to filesystem and mantain a memory cache of requests, but both internal MemoryCache and Storage can be easily extended. There are currently 2 extensions, [s3-tile-storage](https://github.com/CGastrell/s3-tile-storage) and [redis-tile-store](https://github.com/CGastrell/redis-tile-store).
 
 
 ## Overview
@@ -51,7 +51,7 @@ Express-tile-cache uses a simple object to configure where the source TMS is. Th
 
 ### Tile sources
 
-Tile source objects requirements and defaults
+Tile source objects are simple javascript objects. Requirements and defaults:
 
   * `urlTemplate` - {String}: the TMS endpoint you'll be requesting tiles from. It can handle multiple hosts. ie: `http://{s}.tiles.com/`. This type of template requires you to configure a `subdomains` property on the tile source object.
   * `subdomains` - {Array}: an array of strings to replace in the `urlTemplate`. ie: `["tiles1","tiles2"]`
@@ -64,19 +64,19 @@ Tile source objects requirements and defaults
 
 ### Module
 
-The **express-tile-cache** module returns a function. 
+The **express-tile-cache** module returns an express.Router() function 
 
     var tilecache = require("express-tile-cache");
 
-#### express-tile-cache.TileStoreage
+#### express-tile-cache.TileStorage
 
 TileStorage is a small class that handles saving and retrieving tiles.
 
 Shall you need or want to extend this module you can check the source, but it's as simple as implementing two main methods: `save` and `get`.
 
-`save` will receive three arguments:
+`save` will receive three arguments and will manage its output via callback:
 
-  * `stream`: {Stream} to be piped. This usually is a readable stream, and is piped to a **filesystem.createWritableStream**
+  * `stream`: {Stream} to be piped. This usually is a readable stream, and is piped to a *filesystem.createWritableStream*
   * `filename`: {String} name of the file to save.
   * `callback`: {Function} a function that will receive:
     * `error`: {Error or null}
@@ -86,10 +86,36 @@ Shall you need or want to extend this module you can check the source, but it's 
       * `details.Bucket`: {String} additional information on the path. In the case of filesystem, this value holds the directory where the tile was saved.
       * `details.Etag`: {String} an Etag to serve the tile with. The default TileStorage uses the express-tile-cache *hashed* filename.
 
+`get` receives only one argument and returns a [readable stream](https://nodejs.org/api/stream.html#stream_class_stream_readable) which is piped to the response
+
+  * `filepath`: {String}
+
+
 
 #### express-tile-cache.Cache
 
-Cache is the internal reference express-tile-cache keeps to store key pairs of cached requests.
+Cache is the internal reference express-tile-cache keeps to store key pairs of cached requests. It's just a little class storing and retrieving 
+
+Shall you need or want to extend this module you can check the source, but it's as simple as implementing two main methods: `set` and `get`.
+
+`set` receives the hash (key) and a set of properties (usually the return values from the TileStorage).
+
+  * `hash`: {String} - the key to store the data in.
+  * `data`: {Object} - JSON object with the tile properties to be stored.
+
+`set` doesn't return a value and doesn't implement a callback (it should).
+
+`get` retrieves the data associated with a previously set tile hash.
+
+  * `hash`: *{String}* - the key to retrieve.
+  * `callback`: *{Function}* - the callback executed when the dataset is retrieved. Callback receives these arguments:
+    * `err`: *{Error}* - shall anything bad had happened, usually (happily) empty/null.
+    * `data`: *{Object}* - dataset associated with the tile hash. This dataset is the original data associated with a tile and conforms to:
+      * `data.Location`: {String} where to find the file. In the case of the default TileStorage, which uses the local filesystem, it is a path.
+      * `data.Key`: {String} the filename.
+      * `data.Bucket`: {String} additional information on the path. In the case of filesystem, this value holds the directory where the tile was saved.
+      * `data.Etag`: {String} an Etag to serve the tile with. The default TileStorage uses the express-tile-cache *hashed* filename.
+
 
 
 #License 
