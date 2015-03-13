@@ -7,7 +7,8 @@ var tilecache = require("../");
 
 var capabaseargenmap = {
   urlTemplate: 'http://{s}.ign.gob.ar/geoserver/gwc/service/tms/1.0.0',
-  subdomains: ['wms']
+  subdomains: ['wms'],
+  cachepath: "cache"
 }
 
 app.use("/baseargenmap", tilecache(capabaseargenmap));

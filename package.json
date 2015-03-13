@@ -2,16 +2,18 @@
   "name": "express-tile-cache",
   "version": "1.0.0",
   "description": "Express middleware tile cache for tms services",
-  "main": "index.js",
+  "main": "lib",
+  "directories": {
+    "example": "example"
+  },
+  "dependencies": {
+    "debug": "^2.1.2",
+    "express": "^4.12.2",
+    "superagent": "^0.21.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "CG",
-  "license": "MIT",
-  "dependencies": {
-    "aws-sdk": "^2.1.16",
-    "debug": "^2.1.2",
-    "express": "^4.12.2",
-    "superagent": "^0.21.0"
-  }
+  "license": "MIT"
 }
