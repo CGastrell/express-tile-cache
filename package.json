@@ -1,6 +1,6 @@
 {
   "name": "express-tile-cache",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Express middleware tile cache for tms services",
   "main": "lib",
   "directories": {
