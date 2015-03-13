@@ -1,8 +1,4 @@
----
-layout: default
----
-
-## express-tile-cache
+# express-tile-cache
  
 Express-tile-cache is a tile cacher for [TMS](http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification) map tiles services.
 
@@ -118,7 +114,7 @@ Shall you need or want to extend this module you can check the source, but it's 
 
 
 
-#License 
+# License 
 
 The MIT License (MIT)
 
