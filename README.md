@@ -4,7 +4,7 @@ Express-tile-cache is a tile cacher for [TMS](http://wiki.osgeo.org/wiki/Tile_Ma
 
 It will register a standard 1.0.0 TMS endpoint and will fetch tiles from others servers, cache them, and then serve those tiles from the cache.
 
-By default it will cache tiles to filesystem and mantain a memory cache of requests, but both internal MemoryCache and Storage can be easily extended. There are currently 2 extensions, [s3-tile-storage](https://www.npmjs.com/package/s3-tile-storage) and [redis-tile-store](https://www.npmjs.com/package/redis-tile-store).
+By default it will cache tiles to filesystem and mantain an in memory index/cache of requests, but both internal `Cache` index and `TileStorage` can be easily extended to meet your needs. There are currently 2 extensions, [s3-tile-storage](https://www.npmjs.com/package/s3-tile-storage) and [redis-tile-store](https://www.npmjs.com/package/redis-tile-store).
 
 
 ## Overview
@@ -23,8 +23,8 @@ Express-tile-cache implements two default routes:
 
 And as it returns an express.Router() instance you can hook it on your custom route:
 
-    app.use("mytiles", tilecache(options));
-    app.use("moretiles", tilecache(options));
+    app.use("/mytiles", tilecache(options));
+    app.use("/moretiles", tilecache(options));
 
 
 ## Installation 
@@ -51,14 +51,14 @@ Express-tile-cache uses a simple object to configure where the source TMS is. Th
 
 Options is a simple javascript object. Requirements and defaults:
 
-  * `urlTemplate` *{String}*: the TMS endpoint you'll be requesting tiles from. It can handle multiple hosts. ie: `http://{s}.tiles.com/`. This type of template requires you to configure a `subdomains` property on the tile source object.
+  * `urlTemplate` *{String}*: the TMS service url you'll be requesting tiles from. It can handle multiple hosts. ie: `http://{s}.tiles.com/`. This type of template requires you to configure a `subdomains` property on the tile source object.
   * `subdomains` *{Array|String}*: optional - an array of strings or string to replace in the `urlTemplate`. ie: `["tiles1","tiles2"]`.
   * `cachepath` *{String}*: a directory where tiles will be stored and served from. This is internally handled by express-tile-cache. The directory should exist, express-tile-cache won't create it for you. This parameter becomes obsolete in the presence of a custom `storage` parameter.
-  * `forceEpsg` *{Number/String}*: optional - if specified, express-tile-cache will append this EPSG to requests made to the TMS service. This should be an integer or a String representing an integer
-  * `forceNamespace` *{String}*: optional - layer names are usually simple strings, Geoserver accepts layers be served under namespaces. Setting this option makes express-tile-cache to construct layer names with this namespace appended. 
-  * `storage` *{Storage class instance}*: optional - shall you need to store tiles differently you can pass your own class/instance here. Read specifications on how to extend the storage module. Setting this option overrides `cachepath`.
-  * `store` *{Store class instance}*: optional - if you want to provide a different class of memory cache you can pass it here. Read specifications on how to extend the store module.
-  * `tilesource` *{Object}*: optional - if the source of the tiles you need to retrieve are not TMS 1.0.0 compliant, you can provide a custom object to retrieve the tiles properly. Setting this option will override/invalidate `urlTemplate`, `subdomains`, `forceEpsg` and `forceNamespace` providing its own.
+  * `forceEpsg` *{Number/String}*: optional - if specified, express-tile-cache will append this EPSG code to requests made to the TMS service. This should be an integer or a String representing an integer, ie: "3857"
+  * `forceNamespace` *{String}*: optional - layer names are usually simple strings, Geoserver accepts layers to be served under namespaces. Setting this option makes express-tile-cache to construct layer names with this namespace appended. 
+  * `storage` *{Storage class instance}*: optional - shall you need to store tiles differently you can pass your own class/instance here. Read the **express-tile-cache.TileStorage** section on how to extend the storage module. Setting this option overrides `cachepath`.
+  * `store` *{Store class instance}*: optional - if you want to provide a different class of memory cache you can pass it here. Read the **express-tile-cache.Cache** section on how to extend the store module.
+  * `tilesource` *{Object}*: optional - if the source of the tiles you need to retrieve is not TMS 1.0.0 compliant, you can provide a custom object to retrieve the tiles properly. Setting this option will override/invalidate `urlTemplate`, `subdomains`, `forceEpsg` and `forceNamespace` providing its own.
     * `urlTemplate` *{String|Array}*: same as above, but in this case you can provide an array of urls. This option would override `subdomains`.
     * `subdomains` *{String|Array}*: same as above.
     * `forceEpsg` *{Number|String}*: same as above.
@@ -75,11 +75,9 @@ Options is a simple javascript object. Requirements and defaults:
 
 ### Module
 
-The **express-tile-cache** module returns an express.Router() function 
-
     var tilecache = require("express-tile-cache");
 
-#### express-tile-cache.TileStorage
+#### The storage option - Extending express-tile-cache.TileStorage
 
 TileStorage is a small class that handles saving and retrieving tiles.
 
@@ -103,7 +101,7 @@ Shall you need or want to extend this module you can check the source, but it's 
 
 
 
-#### express-tile-cache.Cache
+#### The store option - Extending express-tile-cache.Cache
 
 Cache is the internal index reference **express-tile-cache** keeps to store key pairs of cached requests.
 
@@ -127,7 +125,7 @@ Shall you need or want to extend this module you can check the source, but it's 
       * `data.Bucket` *{String}*: additional information on the path. In the case of filesystem, this value holds the directory where the tile was saved.
       * `data.Etag` *{String}*: an Etag to serve the tile with. The default TileStorage uses the express-tile-cache *hashed* filename.
 
-#### express-tile-cache.TileSource
+#### The tilesource option
 
 Provides a way to override how **express-tile-cache** makes requests to the original tile source. Besides the usual configuration you can control how TMS parameters are sent to the tile source.
 
