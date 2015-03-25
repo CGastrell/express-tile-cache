@@ -53,7 +53,7 @@ Options is a simple javascript object. Requirements and defaults:
 
   * `urlTemplate` *{String}*: the TMS service url you'll be requesting tiles from. It can handle multiple hosts. ie: `http://{s}.tiles.com/`. This type of template requires you to configure a `subdomains` property on the tile source object.
   * `subdomains` *{Array|String}*: optional - an array of strings or string to replace in the `urlTemplate`. ie: `["tiles1","tiles2"]`.
-  * `cachepath` *{String}*: a directory where tiles will be stored and served from. This is internally handled by express-tile-cache. The directory should exist, express-tile-cache won't create it for you. This parameter becomes obsolete in the presence of a custom `storage` parameter.
+  * `cachepath` *{String}*: a directory where tiles will be stored and served from. This is internally handled by express-tile-cache. It defaults to *cache* and it will be created if it doesn't exist. This parameter becomes obsolete in the presence of a custom `storage` parameter.
   * `forceEpsg` *{Number/String}*: optional - if specified, express-tile-cache will append this EPSG code to requests made to the TMS service. This should be an integer or a String representing an integer, ie: "3857"
   * `forceNamespace` *{String}*: optional - layer names are usually simple strings, Geoserver accepts layers to be served under namespaces. Setting this option makes express-tile-cache to construct layer names with this namespace appended. 
   * `storage` *{Storage class instance}*: optional - shall you need to store tiles differently you can pass your own class/instance here. Read the **express-tile-cache.TileStorage** section on how to extend the storage module. Setting this option overrides `cachepath`.
