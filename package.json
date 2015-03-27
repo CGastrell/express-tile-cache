@@ -13,7 +13,7 @@
     "superagent": "^0.21.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- -R spec"
   },
   "keywords": [
     "express",
@@ -35,5 +35,10 @@
   "bugs": {
     "url": "https://github.com/CGastrell/express-tile-cache/issues"
   },
-  "homepage": "https://github.com/CGastrell/express-tile-cache"
+  "homepage": "https://github.com/CGastrell/express-tile-cache",
+  "devDependencies": {
+    "istanbul": "^0.3.11",
+    "mocha": "^2.2.1",
+    "supertest": "^0.15.0"
+  }
 }
