@@ -156,6 +156,16 @@ Check the provided links to see what I'm talking about.
 
 **NOTE**: `this` in the `getTilePath` function refers to the main **express-tile-cache** class
 
+# Test
+
+Since 1.2.2 a unit test is implemented with mocha and istanbul. The test unit outputs a coverage report and asserts almost every function on the scripts. To run the unit test:
+
+```javascript
+cd express-tile-cache
+npm install
+npm test
+```
+
 # License 
 
 The MIT License (MIT)
