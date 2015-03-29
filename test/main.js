@@ -84,7 +84,28 @@ describe('express tile cache', function() {
       .expect(function(res){
         return !~res.body.result.indexOf("ok");
       })
-      .end(done)
+      .end(done);
+  });
+
+  it("should skip cache if response status is greater than 300", function (done){
+    var app = express();
+    var sampleTileSource = {
+      urlTemplate: tmsServiceUrl,
+      cachepath: "cache",
+      store: require("../lib/memorycache")()
+    }
+    var b = TileCache(sampleTileSource);
+    app.use(b);
+
+    request(app)
+      .get("/tms/1.0.0/wrongmapspecs/4/5/6.png")
+      .end(function(err, res){
+        if(err) {
+          done(err);
+          return;
+        }
+        done(assert(sampleTileSource.store.cache, {}));
+      });
   });
 
 });
