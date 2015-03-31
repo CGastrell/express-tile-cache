@@ -81,10 +81,36 @@ describe('express tile cache', function() {
     request(app)
       .get("/clearcache")
       .expect(200)
-      .expect(function(res){
-        return !~res.body.result.indexOf("ok");
-      })
       .end(done);
+  });
+
+  it("should not implement /clearcache route if store doesn't support it", function(done){
+    var app = express();
+    var sampleTileSource = {
+      urlTemplate: tmsServiceUrl,
+      cachepath: "cache",
+      store: require("../lib/memorycache")()
+    }
+    sampleTileSource.store.clear = "not here, not implemented";
+    var b = TileCache(sampleTileSource);
+
+    app.use(b);
+
+    request(app)
+      .get("/clearcache")
+      .expect(404)
+      .end(done);
+  });
+
+  it("should be able to set ttl for cache expiring", function(done){
+    var sampleTileSource = {
+      urlTemplate: tmsServiceUrl,
+      cachepath: "cache",
+      ttl: 1,
+      store: require("../lib/memorycache")()
+    }
+    var b = TileCache(sampleTileSource);
+    done(assert.equal(sampleTileSource.store.maxAge, 1 * 60 * 1000));
   });
 
   it("should skip cache if response status is greater than 300", function (done){
@@ -104,7 +130,7 @@ describe('express tile cache', function() {
           done(err);
           return;
         }
-        done(assert(sampleTileSource.store.cache, {}));
+        done(assert.equal(Object.keys(sampleTileSource.store.cache).length, 0));
       });
   });
 
