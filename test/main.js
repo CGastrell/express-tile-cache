@@ -110,7 +110,7 @@ describe('express tile cache', function() {
       store: require("../lib/memorycache")()
     }
     var b = TileCache(sampleTileSource);
-    done(assert.equal(sampleTileSource.store.maxAge, 1 * 60 * 1000));
+    done(assert.equal(sampleTileSource.store.ttl, 1 * 60 * 1000));
   });
 
   it("should skip cache if response status is greater than 300", function (done){
