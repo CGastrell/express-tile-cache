@@ -58,7 +58,7 @@ Options is a simple javascript object. Requirements and defaults:
   * `forceNamespace` *{String}*: optional - layer names are usually simple strings, Geoserver accepts layers to be served under namespaces. Setting this option makes express-tile-cache to construct layer names with this namespace appended. 
   * `storage` *{Storage class instance}*: optional - shall you need to store tiles differently you can pass your own class/instance here. Read the **express-tile-cache.TileStorage** section on how to extend the storage module. Setting this option overrides `cachepath`.
   * `store` *{Store class instance}*: optional - if you want to provide a different class of memory cache you can pass it here. Read the **express-tile-cache.Cache** section on how to extend the store module.
-  * `ttl` *{Number}*: optional since v1.3.0 - **minutes** to keep cache valid for *each* tile. When you set this value **MemoryCache.setMaxAge** is called internally upon instantiation, but won't be able to change on the fly.
+  * `ttl` *{Number}*: optional since v1.3.0 - **minutes** to keep cache valid for *each* tile. When you set this value **MemoryCache.setTtl** is called internally upon instantiation, but won't be able to change on the fly.
   * `tilesource` *{Object}*: optional - if the source of the tiles you need to retrieve is not TMS 1.0.0 compliant, you can provide a custom object to retrieve the tiles properly. Setting this option will override/invalidate `urlTemplate`, `subdomains`, `forceEpsg` and `forceNamespace` providing its own.
     * `urlTemplate` *{String|Array}*: same as above, but in this case you can provide an array of urls. This option would override `subdomains`.
     * `subdomains` *{String|Array}*: same as above.
@@ -136,13 +136,13 @@ Particularily *MemoryCache* `get` can be called without a callback, thus returni
 
 `delete` simply looks for the hash and deletes the member. You should implement this functionality as it will be used for route `../clear`
 
-##### setMaxAge(minutes)
+##### setTtl(minutes)
 
-As of 1.3.0 the cache can handle expiration for every member, this is as simple as taking the creation date of the member an compare it with some stored miliseconds variable (maxAge).
+As of 1.3.0 the cache can handle expiration for every member, this is as simple as taking the creation date of the member an compare it with some stored miliseconds variable (ttl).
 
-`setMaxAge` can be called anytime, but it is not exposed as part of the *express-tile-cache* API, so, provided value is used upon instantiation via `ttl` option.
+`setTtl` can be called anytime, but it is not exposed as part of the *express-tile-cache* API, so, provided value is used upon instantiation via `ttl` option.
 
-If you need to change `maxAge` value in runtime, you can provide and instance of *MemoryCache* and then play with it:
+If you need to change `ttl` value in runtime, you can provide and instance of *MemoryCache* and then play with it:
 ```javascript
 var memoryCache = require("path-to-express-tile-cachelib/memorycache")();
 var tileCache = require("express-tile-cache");
@@ -157,7 +157,7 @@ var app = express();
 
 app.use(ignArTiles);
 
-memoryCache.setMaxAge(1 / 60); //remember, minutes, so this sets expiring to 1 second
+memoryCache.setTtl(1 / 60); //remember, minutes, so this sets expiring to 1 second
 ```
 
 ##### clear(callback) - Optional
@@ -218,7 +218,7 @@ npm test
   * Moved tile info manipulation into MemoryCache module (stringify and parse are properly handled by MemoryCache)
   * Added `ttl` option to stablish cache expiring
   * Added *MemoryCache.delete* to delete specific hash cache
-  * Added *MemoryCache.setMaxAge* to set an expiring age for cache entries
+  * Added *MemoryCache.setTtl* to set an expiring age for cache entries
   * Added route to check tile cache info
   * Added route to clear specific tile cache
 
