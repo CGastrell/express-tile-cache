@@ -25,7 +25,7 @@ describe('MemoryCache', function(){
     var a = MemCache();
     var b = {the: "value"};
     a.set('theKey', b);
-    assert(a.cache["theKey"].the == "value");
+    assert(JSON.parse(a.cache["theKey"]).the == "value");
     done();
   });
 
@@ -34,7 +34,7 @@ describe('MemoryCache', function(){
     var b = {the: "value"};
     a.set('theKey', b);
     a.get('theKey', function(err, value){
-      assert(value == b)
+      assert(value.the == b.the);
       done(err);
     });
   });
@@ -43,16 +43,54 @@ describe('MemoryCache', function(){
     var a = MemCache();
     var b = {the: "value"};
     a.set('theKey', b);
-    
-    done(assert(a.get('theKey') == b));
+    done(assert(a.get('theKey').the == b.the));
   });
 
   it('can clear its own cache', function(done){
     var a = MemCache();
     var b = {the: "value"};
     a.set('theKey', b);
-    a.clear();
-    done(assert(Object.keys(a.cache) == 0));
+    a.clear(function(err){
+      if(err) {
+        done(err);
+        return;
+      }
+      done(assert(Object.keys(a.cache).length == 0));
+    });
+  });
+
+  it('can delete specific key synchronously', function(done){
+    var a = MemCache();
+    var b = {the: "value"};
+    a.set('theKey', b);
+    a.delete("theKey")
+    done(assert(a.get("theKey") == undefined));
+  });
+
+  it('can delete specific key asynchronously', function(done){
+    var a = MemCache();
+    var b = {the: "value"};
+    a.set('theKey', b);
+    a.delete("theKey", function(err, hashExisted){
+      done(assert(a.get("theKey") == undefined));
+    });
+  });
+
+  it("should ignore a delete command on a non existent hash", function(done){
+    var a = MemCache();
+    a.delete("theKey", function(err, hashExisted){
+      done(assert(hashExisted == false));
+    });
+  });
+
+  it("won't return an expired hash", function(done){
+    var a = MemCache();
+    a.setMaxAge(1 / 100);
+    var b = {the: "value"};
+    a.set('theKey', b);
+    setTimeout(function(){
+      done(assert.equal(a.get("theKey"), null));
+    }, 1000);
   });
 
 });
