@@ -59,6 +59,7 @@ Options is a simple javascript object. Requirements and defaults:
   * `storage` *{Storage class instance}*: optional - shall you need to store tiles differently you can pass your own class/instance here. Read the **express-tile-cache.TileStorage** section on how to extend the storage module. Setting this option overrides `cachepath`.
   * `store` *{Store class instance}*: optional - if you want to provide a different class of memory cache you can pass it here. Read the **express-tile-cache.Cache** section on how to extend the store module.
   * `ttl` *{Number}*: optional since v1.3.0 - **minutes** to keep cache valid for *each* tile. When you set this value **MemoryCache.setTtl** is called internally upon instantiation, but won't be able to change on the fly.
+  * `clearRoute` *{String}*: optional - if true it will enable a default */clearcache* route to clear the cache index. Use a string starting with a `/` to enable and set custom clear route.
   * `tilesource` *{Object}*: optional - if the source of the tiles you need to retrieve is not TMS 1.0.0 compliant, you can provide a custom object to retrieve the tiles properly. Setting this option will override/invalidate `urlTemplate`, `subdomains`, `forceEpsg` and `forceNamespace` providing its own.
     * `urlTemplate` *{String|Array}*: same as above, but in this case you can provide an array of urls. This option would override `subdomains`.
     * `subdomains` *{String|Array}*: same as above.
@@ -212,6 +213,19 @@ npm test
 ```
 
 # Changelog
+
+## 1.3.2
+
+  * New option `clearRoute` to set an automagic route to clear the cache index
+  * Removed `superagent` dependency, added `request`
+  * Fixed bugs
+  * Fixed bad data manipulation
+  * Added missing error callback on TMS request
+  * Skip cache when TMS request fails (error codes >= 300)
+
+## 1.3.0-beta
+
+  * Conditional route /clearcache set if the *store* implements a method `clear`
 
 ## 1.3.0
 

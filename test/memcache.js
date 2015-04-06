@@ -85,7 +85,7 @@ describe('MemoryCache', function(){
 
   it("won't return an expired hash", function(done){
     var a = MemCache();
-    a.setMaxAge(1 / 100);
+    a.setTtl(1 / 100);
     var b = {the: "value"};
     a.set('theKey', b);
     setTimeout(function(){
