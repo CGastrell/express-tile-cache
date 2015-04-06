@@ -69,11 +69,27 @@ describe('express tile cache', function() {
 
   });
 
+  it("should throw error if cacheRoute is string and doesn't start with '/'", function(done){
+
+    var sampleTileSource = {
+      urlTemplate: tmsServiceUrl,
+      cachepath: "cache",
+      clearRoute: "clear"
+    }
+
+    assert.throws(function(){
+      var a = TileCache(sampleTileSource);
+    }, Error);
+    done();
+    
+  });
+
   it("should be able to clear cache when using MemoryCache", function(done){
     var app = express();
     var sampleTileSource = {
       urlTemplate: tmsServiceUrl,
-      cachepath: "cache"
+      cachepath: "cache",
+      clearRoute: true
     }
     var b = TileCache(sampleTileSource);
     app.use(b);
@@ -81,10 +97,57 @@ describe('express tile cache', function() {
     request(app)
       .get("/clearcache")
       .expect(200)
-      .expect(function(res){
-        return !~res.body.result.indexOf("ok");
-      })
-      .end(done)
+      .end(done);
+  });
+
+  it("should not implement /clearcache route if store doesn't support it", function(done){
+    var app = express();
+    var sampleTileSource = {
+      urlTemplate: tmsServiceUrl,
+      cachepath: "cache",
+      store: require("../lib/memorycache")()
+    }
+    sampleTileSource.store.clear = "not here, not implemented";
+    var b = TileCache(sampleTileSource);
+
+    app.use(b);
+
+    request(app)
+      .get("/clearcache")
+      .expect(404)
+      .end(done);
+  });
+
+  it("should be able to set ttl for cache expiring", function(done){
+    var sampleTileSource = {
+      urlTemplate: tmsServiceUrl,
+      cachepath: "cache",
+      ttl: 1,
+      store: require("../lib/memorycache")()
+    }
+    var b = TileCache(sampleTileSource);
+    done(assert.equal(sampleTileSource.store.ttl, 1 * 60 * 1000));
+  });
+
+  it("should skip cache if response status is greater than 300", function (done){
+    var app = express();
+    var sampleTileSource = {
+      urlTemplate: tmsServiceUrl,
+      cachepath: "cache",
+      store: require("../lib/memorycache")()
+    }
+    var b = TileCache(sampleTileSource);
+    app.use(b);
+
+    request(app)
+      .get("/tms/1.0.0/wrongmapspecs/4/5/6.png")
+      .end(function(err, res){
+        if(err) {
+          done(err);
+          return;
+        }
+        done(assert.equal(Object.keys(sampleTileSource.store.cache).length, 0));
+      });
   });
 
 });
