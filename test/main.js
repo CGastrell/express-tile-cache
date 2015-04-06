@@ -69,11 +69,27 @@ describe('express tile cache', function() {
 
   });
 
+  it("should throw error if cacheRoute is string and doesn't start with '/'", function(done){
+
+    var sampleTileSource = {
+      urlTemplate: tmsServiceUrl,
+      cachepath: "cache",
+      clearRoute: "clear"
+    }
+
+    assert.throws(function(){
+      var a = TileCache(sampleTileSource);
+    }, Error);
+    done();
+    
+  });
+
   it("should be able to clear cache when using MemoryCache", function(done){
     var app = express();
     var sampleTileSource = {
       urlTemplate: tmsServiceUrl,
-      cachepath: "cache"
+      cachepath: "cache",
+      clearRoute: true
     }
     var b = TileCache(sampleTileSource);
     app.use(b);
