@@ -229,6 +229,11 @@ npm test
 
 # Changelog
 
+## 1.3.5
+
+  * Added `enableInfo` option to be able to check individual tile cache status
+  * Enhanced docs and added an example
+
 ## 1.3.4
 
   * Added `ttl` support on *MemoryCache*
