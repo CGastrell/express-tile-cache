@@ -45,7 +45,8 @@ describe('express tile cache', function() {
   });
 
   it("should handle TileSource override properly", function(done){
-
+    //sometimes osm takes too long
+    this.timeout(5000);
     var app = express();
     var osm = {
       tilesource: {
