@@ -6,10 +6,12 @@ It will register a standard 1.0.0 TMS endpoint and will fetch tiles from others 
 
 By default it will cache tiles to filesystem and mantain an in memory index/cache of requests, but both internal `Cache` index and `TileStorage` can be easily extended to meet your needs. There are currently 2 extensions, [s3-tile-storage](https://www.npmjs.com/package/s3-tile-storage) and [redis-tile-store](https://www.npmjs.com/package/redis-tile-store).
 
+The builtin default `Cache` and `TileStorage` are meant for debugging and test purposes, not for production.
+
 
 ## Overview
 
-**express-tile-cache** returns a express.Router() with two  TMS specification standard routes adjusted to work with [Geoserver TMS service](http://docs.geoserver.org/stable/en/user/webadmin/tilecache/defaults.html).
+**express-tile-cache** returns a express.Router() with two TMS specification standard routes adjusted to work with [Geoserver TMS service](http://docs.geoserver.org/stable/en/user/webadmin/tilecache/defaults.html).
 
     
     var tilecache = require("express-tile-cache");
@@ -59,7 +61,7 @@ Options is a simple javascript object. Requirements and defaults:
   * `storage` *{Storage class instance}*: optional - shall you need to store tiles differently you can pass your own class/instance here. Read the **express-tile-cache.TileStorage** section on how to extend the storage module. Setting this option overrides `cachepath`.
   * `store` *{Store class instance}*: optional - if you want to provide a different class of memory cache you can pass it here. Read the **express-tile-cache.Cache** section on how to extend the store module.
   * `ttl` *{Number}*: optional, since v1.3.0 - **minutes** to keep cache valid for *each* tile. When you set this value **MemoryCache.setTtl** is called internally upon instantiation, but you won't be able to change it on the fly.
-  * `enableInfo` *{Boolean}*: sets up the same default `GET` routes with the */info* suffix to check on the tile cache data. Result is JSON. Ex: /tms/1.0.0/layer/4/5/6.png/info
+  * `enableInfo` *{Boolean}*: sets up the same default `GET` routes with the */info* suffix to check on the tile cache data. Result is JSON. Ex: `/tms/1.0.0/layer/4/5/6.png/info`
   * `clearRoute` *{String}*: optional - if true it will enable a default */clearcache* route to clear the cache index. Use a string starting with a `/` to enable and set custom clear route. **Heads up!**: the route is configured without any security and responds to a simple *GET* request. Also, the *store* being used has to implement a `clear()` method.
   * `tilesource` *{Object}*: optional - if the source of the tiles you need to retrieve is not TMS 1.0.0 compliant, you can provide a custom object to retrieve the tiles properly. Setting this option will override/invalidate `urlTemplate`, `subdomains`, `forceEpsg` and `forceNamespace` with its own.
     * `urlTemplate` *{String|Array}*: same as above, but in this case you can provide an array of urls. This option would override `subdomains`.
@@ -86,6 +88,8 @@ TileStorage is a small class that handles saving and retrieving tiles.
 
 Shall you need or want to extend this module you can check the source, but it's as simple as implementing two main methods: `save` and `get`.
 
+##### save(stream, filename, callback);
+
 `save` will receive three arguments and will manage its output via callback:
 
   * `stream` *{Stream}*: to be piped. This usually is a readable stream, and is piped to a *filesystem.createWritableStream*
@@ -97,6 +101,8 @@ Shall you need or want to extend this module you can check the source, but it's 
       * `details.Key` *{String}*: the filename.
       * `details.Bucket` *{String}*: additional information on the path. In the case of filesystem, this value holds the directory where the tile was saved.
       * `details.Etag` *{String}*: an Etag to serve the tile with. The default TileStorage uses the express-tile-cache *hashed* filename.
+
+##### get(filepath|url)
 
 `get` receives only one argument and returns a [readable stream](https://nodejs.org/api/stream.html#stream_class_stream_readable) which is piped to the response
 
@@ -136,30 +142,38 @@ Particularily *MemoryCache* `get` can be called without a callback, thus returni
 
 ##### delete(hash)
 
-`delete` simply looks for the hash and deletes the member. You should implement this functionality as it will be used for route `../clear`
+`delete` simply looks for the hash and deletes the member. You should implement this functionality as it will be used for route `*/clear`
 
 ##### setTtl(minutes)
 
-As of 1.3.0 the cache can handle expiration for every member, this is as simple as taking the creation date of the member an compare it with some stored miliseconds variable (ttl).
+As of 1.3.0 the cache can handle expiration for every indexed tile, this is as simple as taking the creation date of the member an compare it with some stored seconds variable (ttl).
 
 `setTtl` can be called anytime, but it is not exposed as part of the *express-tile-cache* API, so, provided value is used upon instantiation via `ttl` option.
 
 If you need to change `ttl` value in runtime, you can provide and instance of *MemoryCache* and then play with it:
 ```javascript
-var memoryCache = require("path-to-express-tile-cachelib/memorycache")();
+var express = require('express');
+
+//instance the builtin memorycache
+var memoryCache = require("path-to-express-tile-cache/lib/memorycache")();
+
 var tileCache = require("express-tile-cache");
+
 var ignArTiles = tileCache({
   urlTemplate: "http://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0",
   cachepath: "cache",
   ttl: 60, //remember these are minutes
-  store: memoryCache()
+  store: memoryCache //use the instance of the default memorycache
 });
 
 var app = express();
 
 app.use(ignArTiles);
 
-memoryCache.setTtl(1 / 60); //remember, minutes, so this sets expiring to 1 second
+//change the ttl
+memoryCache.setTtl(1 / 10); //remember, minutes, so this sets expiring to 6 seconds aprox
+
+app.listen(process.env.PORT || 3000);
 ```
 
 ##### clear(callback) - Optional
@@ -180,7 +194,7 @@ The `getTilePath` function must return a *{String}* which is the path to append 
 
 An easy way to understand this is with an example:
 
-[OpenStreetMaps handles tiles](http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames) in a non standard way. It accomodates to the grid in the same way that [Google Maps do](https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates/): the Y tile grid is inverted. So, a TileSource for OSM would look like:
+[OpenStreetMaps handles tiles](http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames) in a non (TMS) standard way. It accomodates to the grid in the same way that [Google Maps do](https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates/): the Y tile grid is inverted. So, a TileSource for OSM would look like:
 
 ```javascript
 var osm = {
@@ -197,7 +211,7 @@ var osm = {
 }
 app.use("/osm", tilecache(osm));
 ```
-With this configuration you can have your own OSM tile cache. Whether you should or not, is up to you.
+With this configuration you can have your own OSM tile cache.
 
 Check the provided links to see what I'm talking about.
 
