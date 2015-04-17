@@ -215,6 +215,13 @@ npm test
 
 # Changelog
 
+## 1.3.4
+
+  * Added `ttl` support on *MemoryCache*
+  * Performed some linting
+  * Removed unused dependencies
+  * More testing, implemented Istanbul
+  
 ## 1.3.2
 
   * New option `clearRoute` to set an automagic route to clear the cache index
