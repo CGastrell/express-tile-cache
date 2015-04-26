@@ -45,7 +45,8 @@ describe('express tile cache', function() {
   });
 
   it("should handle TileSource override properly", function(done){
-
+    //sometimes osm takes too long
+    this.timeout(5000);
     var app = express();
     var osm = {
       tilesource: {
@@ -122,11 +123,11 @@ describe('express tile cache', function() {
     var sampleTileSource = {
       urlTemplate: tmsServiceUrl,
       cachepath: "cache",
-      ttl: 1,
+      ttl: 2,
       store: require("../lib/memorycache")()
     }
     var b = TileCache(sampleTileSource);
-    done(assert.equal(sampleTileSource.store.ttl, 1 * 60 * 1000));
+    done(assert.equal(sampleTileSource.store.ttl, 2 * 60));
   });
 
   it("should skip cache if response status is greater than 300", function (done){
@@ -152,7 +153,8 @@ describe('express tile cache', function() {
 
 });
 
-describe("TMS service", function(){
+
+describe("Routes", function(){
   after(function(done){
     if(fs.existsSync(sampleCacheDir)){
       fs.rmrfSync(sampleCacheDir);
@@ -160,12 +162,39 @@ describe("TMS service", function(){
     done();
   });
 
-  context("Standard TMS request", function(){
+  context("Tile info", function(){
+    var app = express();
+    var sampleTileSource = {
+      urlTemplate: tmsServiceUrl,
+      cachepath: sampleCacheDir,
+      enableInfo: true
+    }
+    var b = TileCache(sampleTileSource);
+    app.use(b);
+
+    it('should be able to implement */info route to get cached tile data', function(done){
+      request(app)
+        .get("/tms/capabaseargenmap/4/5/6.png")
+        .end(function(err){
+          if(err) {
+            return done(err);
+          }
+          request(app)
+            .get('/tms/capabaseargenmap/4/5/6.png/info')
+            .expect('Content-Type', /json/)
+            .end(done);
+        });
+    });
+
+  });
+
+
+  context("TMS requests", function(){
 
     var app = express();
     var sampleTileSource = {
       urlTemplate: tmsServiceUrl,
-      cachepath: "cache"
+      cachepath: sampleCacheDir
     }
     var b = TileCache(sampleTileSource);
     app.use(b);
