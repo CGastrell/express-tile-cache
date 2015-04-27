@@ -60,7 +60,7 @@ Options is a simple javascript object. Requirements and defaults:
   * `forceNamespace` *{String}*: optional - layer names are usually simple strings, Geoserver accepts layers to be served under namespaces. Setting this option makes express-tile-cache to construct layer names with this namespace appended. 
   * `storage` *{Storage class instance}*: optional - shall you need to store tiles differently you can pass your own class/instance here. Read the **express-tile-cache.TileStorage** section on how to extend the storage module. Setting this option overrides `cachepath`.
   * `store` *{Store class instance}*: optional - if you want to provide a different class of memory cache you can pass it here. Read the **express-tile-cache.Cache** section on how to extend the store module.
-  * `ttl` *{Number}*: optional, since v1.3.0 - **minutes** to keep cache valid for *each* tile. When you set this value **MemoryCache.setTtl** is called internally upon instantiation, but you won't be able to change it on the fly.
+  * `ttl` *{Number}*: optional, since v1.3.0 - **seconds** to keep cache valid for *each* tile. When you set this value **MemoryCache.setTtl** is called internally upon instantiation, but you won't be able to change it on the fly.
   * `enableInfo` *{Boolean}*: sets up the same default `GET` routes with the */info* suffix to check on the tile cache data. Result is JSON. Ex: `/tms/1.0.0/layer/4/5/6.png/info`
   * `clearRoute` *{String}*: optional - if true it will enable a default */clearcache* route to clear the cache index. Use a string starting with a `/` to enable and set custom clear route. **Heads up!**: the route is configured without any security and responds to a simple *GET* request. Also, the *store* being used has to implement a `clear()` method.
   * `tilesource` *{Object}*: optional - if the source of the tiles you need to retrieve is not TMS 1.0.0 compliant, you can provide a custom object to retrieve the tiles properly. Setting this option will override/invalidate `urlTemplate`, `subdomains`, `forceEpsg` and `forceNamespace` with its own.
@@ -144,7 +144,7 @@ Particularily *MemoryCache* `get` can be called without a callback, thus returni
 
 `delete` simply looks for the hash and deletes the member. You should implement this functionality as it will be used for route `*/clear`
 
-##### setTtl(minutes)
+##### setTtl(seconds)
 
 As of 1.3.0 the cache can handle expiration for every indexed tile, this is as simple as taking the creation date of the member an compare it with some stored seconds variable (ttl).
 
@@ -162,7 +162,7 @@ var tileCache = require("express-tile-cache");
 var ignArTiles = tileCache({
   urlTemplate: "http://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0",
   cachepath: "cache",
-  ttl: 60, //remember these are minutes
+  ttl: 60
   store: memoryCache //use the instance of the default memorycache
 });
 
@@ -171,7 +171,7 @@ var app = express();
 app.use(ignArTiles);
 
 //change the ttl
-memoryCache.setTtl(1 / 10); //remember, minutes, so this sets expiring to 6 seconds aprox
+memoryCache.setTtl(10); // sets expiring to 10 seconds
 
 app.listen(process.env.PORT || 3000);
 ```
@@ -233,6 +233,7 @@ npm test
 
   * Added `enableInfo` option to be able to check individual tile cache status
   * Enhanced docs and added an example
+  * Changed `ttl` and MemoryCache.`setTtl` to use seconds as it is the standard
 
 ## 1.3.4
 
