@@ -28,6 +28,10 @@ And as it returns an express.Router() instance you can hook it on your custom ro
     app.use("/mytiles", tilecache(options));
     app.use("/moretiles", tilecache(options));
 
+Using the first custom route shown above, your complete tile URL might look like:
+
+    http://{serverAndPort}/mytiles/tms/1.0.0/{layer}/{z}/{x}/{y}.png
+
 
 ## Installation 
 
