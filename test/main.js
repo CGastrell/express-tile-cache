@@ -16,7 +16,7 @@ describe('express tile cache', function() {
       var a = TileCache();
     }, Error);
     done();
-    
+
   });
 
   it('should throw error if either cachepath or storage in options', function(done){
@@ -29,11 +29,11 @@ describe('express tile cache', function() {
       var a = TileCache(sampleTileSource);
     }, Error);
     done();
-    
+
   });
 
   it('should return a Function instance', function(){
-    
+
     var sampleTileSource = {
       urlTemplate: "http://sample.com/tms/z/x/y.png",
       cachepath: sampleCacheDir
@@ -64,7 +64,7 @@ describe('express tile cache', function() {
     app.use(TileCache(osm));
 
     request(app)
-      .get("/tms/1.0.0/capabaseargenmap/4/5/6.png")
+      .get("/tms/1.0.0/4/5/6.png")
       .expect(200)
       .end(done);
 
@@ -82,7 +82,7 @@ describe('express tile cache', function() {
       var a = TileCache(sampleTileSource);
     }, Error);
     done();
-    
+
   });
 
   it("should be able to clear cache when using MemoryCache", function(done){
@@ -127,11 +127,12 @@ describe('express tile cache', function() {
       store: require("../lib/memorycache")()
     }
     var b = TileCache(sampleTileSource);
-    done(assert.equal(sampleTileSource.store.ttl, 2 * 60));
+    done(assert.equal(sampleTileSource.store.ttl, 2));
   });
 
   it("should skip cache if response status is greater than 300", function (done){
     var app = express();
+    this.timeout(5000);
     var sampleTileSource = {
       urlTemplate: tmsServiceUrl,
       cachepath: "cache",
@@ -141,7 +142,7 @@ describe('express tile cache', function() {
     app.use(b);
 
     request(app)
-      .get("/tms/1.0.0/wrongmapspecs/4/5/6.png")
+      .get("/wrongmapspecs/4/5/6.png")
       .end(function(err, res){
         if(err) {
           done(err);
@@ -198,7 +199,7 @@ describe("Routes", function(){
     }
     var b = TileCache(sampleTileSource);
     app.use(b);
-    
+
     it("should respond to standard request", function(done){
 
       //there should be a better way to know if tile came from cache or not
@@ -217,9 +218,9 @@ describe("Routes", function(){
         .expect(200)
         .end(done);
     });
-    
+
   });
-  
+
   context("Standard TMS request without version (1.0.0)", function(){
 
     var app = express();
