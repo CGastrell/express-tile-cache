@@ -1,5 +1,0 @@
-examples/cache/*
-!examples/cache
-node_modules
-coverage
-.eslintrc
