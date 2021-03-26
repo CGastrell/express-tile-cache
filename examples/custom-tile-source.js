@@ -18,6 +18,11 @@ var osm = {
   cachepath: "cache"
 }
 
-app.use("/osm", tilecache(osm));
+var tile_server_request_options = {
+  headers: {'user-agent': 'express-tile-cache'}
+}
+
+
+app.use("/osm", tilecache(osm, tile_server_request_options));
 
 app.listen(process.env.PORT || 3000);
